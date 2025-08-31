@@ -1,0 +1,42 @@
+# /pipeline.yml content is here
+
+# Write the pipeline.yml file
+pipeline_yaml = """\
+name: Tourism Package Prediction Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run data prep
+        run: |
+          python data/raw_to_processed.py
+
+      - name: Train and register model
+        run: |
+          python model/train_and_register.py
+"""
+
+with open(os.path.join(pipeline_dir, "pipeline.yml"), "w") as f:
+    f.write(pipeline_yaml)
+
+print("Pipeline.yml written successfully.")
