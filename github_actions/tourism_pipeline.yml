@@ -1,1 +1,66 @@
+name: Tourism Package Prediction Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  upload-dataset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Upload dataset to Hugging Face
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python data/data_register.py
+
+  prepare-data:
+    needs: upload-dataset
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Prepare dataset
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python data/prep.py
+
+  train-model:
+    needs: prepare-data
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Train model
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python model/train.py
+
+  deploy-to-huggingface:
+    needs: [upload-dataset, prepare-data, train-model]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Deploy frontend to Hugging Face Space
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: python hosting/hosting.py
 
